@@ -1,0 +1,1 @@
+{"version":2,"name":"nasdaqtrader-rss","builds":[{"src":"**/*.py","use":"@now/python"},{"src":"css/**","use":"@now/static"}]}
