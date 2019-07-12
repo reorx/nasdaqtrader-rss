@@ -1,5 +1,9 @@
 import requests
+import datetime
+from bs4 import BeautifulSoup
 from flask import Flask, Response
+from feedgen.feed import FeedGenerator
+import arrow
 
 
 app = Flask(__name__)
@@ -26,15 +30,90 @@ req_data = {
 }
 
 
+class RequestError(Exception):
+    pass
+
+
 def get_corporate_actions_html():
     resp = requests.post(url, headers=headers, json=req_data)
     if resp.status_code != 200:
-        return resp.content
+        raise RequestError()
     d = resp.json()
-    return d['result']
+    return d['result']  # raise KeyError
+
+
+def parse_html_to_feed(html):
+    soup = BeautifulSoup(html, features='html.parser')
+    fg = FeedGenerator()
+    fg.language('en')
+    fg.title('Nasdaqtrader Corporate Actions')
+    fg.description('Nasdaqtrader Corporate Actions')
+    fg.link(dict(
+        href='https://github.com/reorx',
+        rel='alternate',
+    ))
+
+    tb = soup.find('table')
+
+    """
+    Date		Market	Alert #		Headline
+    Jul 05, 2019	NASDAQ	#2019-129	<a>(UPDATED) Information Regarding the Merger of Realm Therapeutics plc (RLM)</a>
+
+    rss example: https://www.nasdaqtrader.com/rss.aspx?feed=currentheadlines&categorylist=2,6,7
+    """
+
+    for tr in tb.find('tbody').find_all('tr'):
+        if not tr:
+            continue
+        tds = tr.find_all('td')
+        if not tds:
+            continue
+        row = []
+        fe = fg.add_entry()
+        for item in tds:
+            row.append(item.text.strip())
+        # lg.debug('parsing table row: %s', row)
+
+        url = tds[-1].find('a')['href']
+        date_str, market, id, headline = row[0], row[1], row[2], row[3]
+        date = datetime.datetime.strptime(date_str, '%b %d, %Y')
+        arrow_date = arrow.get(date, 'America/New_York')
+        fe.id(url)
+        fe.title(headline)
+        fe.link(dict(
+            href=url,
+            rel='alternate',
+        ))
+        fe.description(headline)
+        fe.content("""
+<table>
+    <thead>
+        <th>
+            <td>Date</td>
+            <td>Market</td>
+            <td>Alert #</td>
+            <td>Headline</td>
+        <th>
+    </thead>
+    <tbody>
+        <tr>
+            {}
+        </tr>
+    </tbody>
+</table>
+""".format(tr))
+        #fe.link(url)
+        fe.pubDate(arrow_date.datetime)
+
+    return fg.rss_str(pretty=True)
 
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
-    return Response(get_corporate_actions_html(), mimetype='text/html')
+    try:
+        html = get_corporate_actions_html()
+    except (KeyError, RequestError) as e:
+        return Response(f'Error: {e}', mimetype='text/html')
+    feed = parse_html_to_feed(html)
+    return Response(feed, mimetype='text/xml')

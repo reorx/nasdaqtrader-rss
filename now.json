@@ -4,11 +4,10 @@
   "builds": [
     {
       "src": "**/*.py",
-      "use": "@now/python"
-    },
-    {
-      "src": "css/**",
-      "use": "@now/static"
+      "use": "@now/python",
+      "config": {
+        "maxLambdaSize": "100mb"
+      }
     }
   ]
 }
