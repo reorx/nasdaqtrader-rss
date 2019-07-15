@@ -8,12 +8,14 @@ tpl = """\
 <html>
     <head>
         <title>Nasdaqtrader RSS</title>
+        <link rel="stylesheet" href="/css/normalize.css" media="all">
     </head>
     <body>
         <h1>Nasdaqtrader RSS</h1>
-        <p>Transform Nasdaqtrader news html page to rss API
-        <br/>
-        RSS List:
+        <p>Transform Nasdaqtrader news html page to rss API, GitHub project:
+            <a href="https://github.com/reorx/nasdaqtrader-rss">reorx/nasdaqtrader-rss</a>
+        </p>
+        <p>RSS List:
         </p>
         <ul>
             <li>News - Corporate Action Alerts: <a href="/rss">/rss</a>

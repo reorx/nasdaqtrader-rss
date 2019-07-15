@@ -8,6 +8,10 @@
       "config": {
         "maxLambdaSize": "100mb"
       }
+    },
+    {
+      "src": "css/**",
+      "use": "@now/static"
     }
   ]
 }
