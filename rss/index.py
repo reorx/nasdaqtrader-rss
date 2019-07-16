@@ -97,9 +97,7 @@ def parse_html_to_feed(html):
         </tr>
     </thead>
     <tbody>
-        <tr>
-            {}
-        </tr>
+        {}
     </tbody>
 </table>
 """.format(tr))
