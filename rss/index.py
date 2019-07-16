@@ -89,12 +89,12 @@ def parse_html_to_feed(html):
         fe.content("""
 <table>
     <thead>
-        <th>
-            <td>Date</td>
-            <td>Market</td>
-            <td>Alert #</td>
-            <td>Headline</td>
-        <th>
+        <tr>
+            <th>Date</th>
+            <th>Market</th>
+            <th>Alert #</th>
+            <th>Headline</th>
+        </tr>
     </thead>
     <tbody>
         <tr>
